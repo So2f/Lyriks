@@ -26,25 +26,19 @@ const TopPlay = () => {
   const { activeSong, isPlaying } = useSelector((state) => state.player);
   const { data } = useGetTopChartsQuery();
   const divRef = useRef(null);
-  const artistId = "1462541757";
-
-  const { data: artistData } = useGetArtistQuery(artistId);
 
   useEffect(() => {
     divRef.current.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  const useArtistData = (artistId, index) => {
+    const { data: artistData } = useGetArtistQuery(artistId);
+    return artistData;
+  };
+
   const topPlays = data?.slice(0, 5);
 
-  // console.log(topPlays.attributes);
-
-  topPlays?.forEach((item, index) => {
-    console.log(
-      `Attributes of item ${index + 1}:`,
-      item.relationships.artists.data[0].id,
-      artistData?.data[0].avatar
-    );
-  });
+  // console.log("topPlays:", topPlays);
 
   const handlePlayClick = () => {
     dispatch(setActiveSong({ song, data, i }));
@@ -91,21 +85,31 @@ const TopPlay = () => {
           centeredSlidesBounds
           className="mt-4"
         >
-          {topPlays?.map((song, i) => (
-            <SwiperSlide
-              key={song?.key}
-              style={{ width: "25%", height: "auto" }}
-              className="shadow-lg rounded-full animate-slideright"
-            >
-              <Link to={`/artists/${song.images?.coverart}`}>
-                <img
-                  src={artistData?.data[0].avatar} //to change data[i].attributes.artwork.url  artist.data[0].avatar  topPlays[1]?.relationships.artists.data[0].id
-                  alt="name"
-                  className="rounded-full w-full object-cover"
-                />
-              </Link>
-            </SwiperSlide>
-          ))}
+          {topPlays?.map((song, i) => {
+            const id = song.relationships.artists.data[0].id;
+
+            const artistData = useArtistData(id, i);
+
+            return (
+              <SwiperSlide
+                key={song?.key}
+                style={{ width: "25%", height: "auto" }}
+                className="shadow-lg rounded-full animate-slideright"
+              >
+                <Link to={`/artists/${song.images?.coverart}`}>
+                  {artistData ? (
+                    <img
+                      src={artistData.data[0].avatar}
+                      alt="name"
+                      className="rounded-full w-full object-cover"
+                    />
+                  ) : (
+                    <Loader title="Loading artist data..." />
+                  )}
+                </Link>
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
       </div>
     </div>
