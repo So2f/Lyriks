@@ -14,7 +14,7 @@ const SongDetails = () => {
   const { data: songData, isFetching: isFetchingSongDetails } =
     useGetSongDetailsQuery({ songid });
 
-  //   console.log(songData?.resources.lyrics["34769645"].attributes.text);
+  const lyricsData = songData?.resources.lyrics;
 
   return (
     <div className="flex flex-col">
@@ -22,12 +22,14 @@ const SongDetails = () => {
       <div className="mb-10">
         <h2 className="text-white text-3xl font-bold">Lyrics: </h2>
         <div className="mt-5">
-          {songData?.resources.songs[songid].attributes.hasLyrics === true ? (
-            songData?.resources.lyrics["34769645"].attributes.text.map(
-              (line, i) => <p>{line}</p>
+          {lyricsData ? (
+            Object.keys(lyricsData).map((lyricsKey) =>
+              lyricsData[lyricsKey].attributes.text.map((line, i) => (
+                <p key={i}>{line}</p>
+              ))
             )
           ) : (
-            <p>Sorry, no lyrics found !</p>
+            <p>Sorry, no lyrics found!</p>
           )}
         </div>
       </div>
