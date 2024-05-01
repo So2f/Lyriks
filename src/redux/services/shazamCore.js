@@ -24,6 +24,7 @@ export const shazamCoreApi = createApi({
           images: {
             coverart: song.attributes.artwork.url,
           },
+          key: song.id,
         }));
       },
     }),
@@ -35,7 +36,14 @@ export const shazamCoreApi = createApi({
         },
       }),
     }),
+    getSongDetails: builder.query({
+      query: ({ songid }) => `/v2/tracks/details?track_id=${songid}`,
+    }),
   }),
 });
 
-export const { useGetTopChartsQuery, useGetArtistQuery } = shazamCoreApi;
+export const {
+  useGetTopChartsQuery,
+  useGetArtistQuery,
+  useGetSongDetailsQuery,
+} = shazamCoreApi;

@@ -10,14 +10,42 @@ import Error from "./Error";
 import PlayPause from "./PlayPause";
 import { playPause, setActiveSong } from "../redux/features/playerSlice";
 import { useGetTopChartsQuery } from "../redux/services/shazamCore";
-import { useGetArtistQuery } from "../redux/services/shazamCore";
 
 import "swiper/css";
 import "swiper/css/free-mode";
 
-const TopChartCard = ({ song, i }) => (
+const TopChartCard = ({
+  song,
+  i,
+  isPlaying,
+  activeSong,
+  handlePauseClick,
+  handlePlayClick,
+}) => (
   <div className="w-full flex flex-row items-center hover:bg-[#4c426e] py-2 p-4 rounded-lg cursor-pointer mb-2">
-    {song.title}
+    <h3 className="font-bold text-base text-white mr-3">{i + 1}.</h3>
+    <div className="flex-1 flex flex-row justify-between items-center">
+      <img
+        src={song?.attributes.artwork.url}
+        alt={song?.title}
+        className="w-20 h-20 rounded-lg"
+      />
+      <div className="flex-1 flex flex-col justify-center mx-3">
+        <Link to={`/songs/${song?.key}`}>
+          <p className="text-xl font-bold text-white">{song?.title}</p>
+        </Link>
+        <Link to={`/artists/${song?.artists}`}>
+          <p className="text-base text-gray-300 mt-1">{song?.subtitle}</p>
+        </Link>
+      </div>
+    </div>
+    <PlayPause
+      isPlaying={isPlaying}
+      activeSong={activeSong}
+      song={song}
+      handlePause={handlePauseClick}
+      handlePlay={handlePlayClick}
+    />
   </div>
 );
 
@@ -31,16 +59,11 @@ const TopPlay = () => {
     divRef.current.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  const useArtistData = (artistId, index) => {
-    const { data: artistData } = useGetArtistQuery(artistId);
-    return artistData;
-  };
-
   const topPlays = data?.slice(0, 5);
 
   // console.log("topPlays:", topPlays);
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (song, i) => {
     dispatch(setActiveSong({ song, data, i }));
     dispatch(playPause(true));
   };
@@ -64,7 +87,15 @@ const TopPlay = () => {
 
         <div className="mt-4 flex flex-col gap-1">
           {topPlays?.map((song, i) => (
-            <TopChartCard key={song.key} song={song} i={i} />
+            <TopChartCard
+              key={song.key}
+              song={song}
+              i={i}
+              isPlaying={isPlaying}
+              activeSong={activeSong}
+              handlePauseClick={handlePauseClick}
+              handlePlayClick={() => handlePlayClick(song, i)}
+            />
           ))}
         </div>
       </div>
@@ -83,33 +114,28 @@ const TopPlay = () => {
           freeMode
           centeredSlides
           centeredSlidesBounds
+          modules={[FreeMode]}
           className="mt-4"
         >
-          {topPlays?.map((song, i) => {
-            const id = song.relationships.artists.data[0].id;
+          {topPlays?.map((song, i) => (
+            // const { id } = song.relationships.artists.data[0].id;
+            // console.log("song: ", topPlays[i]);
+            // const artistData = useArtistData(id, i);
 
-            const artistData = useArtistData(id, i);
-
-            return (
-              <SwiperSlide
-                key={song?.key}
-                style={{ width: "25%", height: "auto" }}
-                className="shadow-lg rounded-full animate-slideright"
-              >
-                <Link to={`/artists/${song.images?.coverart}`}>
-                  {artistData ? (
-                    <img
-                      src={artistData.data[0].avatar}
-                      alt="name"
-                      className="rounded-full w-full object-cover"
-                    />
-                  ) : (
-                    <Loader title="Loading artist data..." />
-                  )}
-                </Link>
-              </SwiperSlide>
-            );
-          })}
+            <SwiperSlide
+              key={song?.key}
+              style={{ width: "25%", height: "auto" }}
+              className="shadow-lg rounded-full animate-slideright"
+            >
+              <Link to={`/artists/${song.images?.coverart}`}>
+                <img
+                  src={topPlays[i].attributes.artwork.url} // artistData.data[0].avatar and link to change
+                  alt="name"
+                  className="rounded-full w-full object-cover"
+                />
+              </Link>
+            </SwiperSlide>
+          ))}
         </Swiper>
       </div>
     </div>
